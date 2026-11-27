@@ -1,0 +1,123 @@
+﻿@* Mantenimiento de empleados (opción P003): CRUD de PEEMP_EMPLE con borrado lógico *@
+
+    <style>
+        .ficha { background: #e6e9ee; border-color: #d3d8df; }
+        .ficha .malla { display: grid; gap: 12px 28px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .ficha .fila-campo { align-items: center; display: grid; gap: 12px; grid-template-columns: 170px minmax(0, 1fr); }
+        .ficha .fila-campo label { color: #374151; font-size: 14px; font-weight: 600; margin: 0; }
+        .ficha .form-control, .ficha .custom-select { background-color: #fff; height: 38px; width: 100%; }
+        .ficha .form-control[readonly] { background-color: #f1f3f6; }
+        .pestanas { border-bottom: 1px solid #c9cfd8; display: flex; flex-wrap: wrap; gap: 4px; margin: 20px 0 0; }
+        .pestanas button { background: transparent; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0;
+            color: #4b5563; font-weight: 600; margin-bottom: -1px; padding: 9px 16px; }
+        .pestanas button.activa { background: #f4f6f8; border-color: #c9cfd8; color: var(--azul-800); }
+        .pestana { background: #f4f6f8; border: 1px solid #c9cfd8; border-top: 0; border-radius: 0 0 8px 8px; display: none; padding: 18px; }
+        .pestana.activa { display: block; }
+        @@media (max-width: 991px) {
+            .ficha .malla { grid-template-columns: 1fr; }
+            .ficha .fila-campo { grid-template-columns: 140px minmax(0, 1fr); }
+        }
+        .botonera { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+        .tabla-sigh tbody tr { cursor: pointer; }
+        .tabla-sigh tbody tr.seleccionada td { background: var(--azul-100); }
+        .modo { font-size: 13px; }
+    </style>
+
+
+<section class="encabezado-pagina">
+    <div>
+        <div class="antetitulo">Personal · P003</div>
+        <h1>Mantenimiento de empleados</h1>
+        <p>Registre y actualice los datos del personal. «Borrar» no elimina el registro: el empleado pasa a Inactivo y se conserva su historial.</p>
+    </div>
+</section>
+
+<div class="panel ficha mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0" id="tituloFicha">Nuevo empleado</h2>
+        <span class="etiqueta etiqueta-verde modo" id="modo">Registro nuevo</span>
+    </div>
+    <div class="malla">
+            <div class="fila-campo"><label for="fCodigo">Código empleado:</label><input id="fCodigo" class="form-control" readonly></div>
+            <div class="fila-campo"><label for="fCedula">Cédula:</label><input id="fCedula" class="form-control" maxlength="10" inputmode="numeric" placeholder="10 dígitos"></div>
+            <div class="fila-campo"><label for="fApellidos">Apellidos empleado:</label><input id="fApellidos" class="form-control" maxlength="60" placeholder="Ej.: PEREZ LOPEZ"></div>
+            <div class="fila-campo"><label for="fNombres">Nombres empleado:</label><input id="fNombres" class="form-control" maxlength="60" placeholder="Ej.: JUAN CARLOS"></div>
+    </div>
+
+    <div class="pestanas" role="tablist">
+        <button type="button" class="activa" data-pestana="tabPersonal"><i class="bi bi-person mr-1"></i> Inf personal</button>
+        <button type="button" data-pestana="tabProfesional"><i class="bi bi-briefcase mr-1"></i> Inf profesional</button>
+        <button type="button" data-pestana="tabContacto"><i class="bi bi-telephone mr-1"></i> Inf contacto</button>
+    </div>
+    <div class="pestana activa" id="tabPersonal">
+        <div class="malla">
+            <div class="fila-campo"><label for="fFecha">Fecha nac. empleado:</label><input id="fFecha" type="date" class="form-control"></div>
+            <div class="fila-campo"><label for="fGenero">Género:</label><select id="fGenero" class="custom-select"></select></div>
+            <div class="fila-campo"><label for="fEstadoCivil">Estado civil:</label><select id="fEstadoCivil" class="custom-select"></select></div>
+        </div>
+    </div>
+    <div class="pestana" id="tabProfesional">
+        <div class="malla">
+            <div class="fila-campo"><label for="fRegistro">Registro prof.:</label><input id="fRegistro" class="form-control" maxlength="30" placeholder="Ej.: MSP-17-04521"></div>
+            <div class="fila-campo"><label for="fEstado">Estado:</label><select id="fEstado" class="custom-select"><option value="A">Activo</option><option value="I">Inactivo</option></select></div>
+            <div class="fila-campo"><label for="fCargo">Cargo:</label><select id="fCargo" class="custom-select"></select></div>
+        </div>
+    </div>
+    <div class="pestana" id="tabContacto">
+        <div class="malla">
+            <div class="fila-campo"><label for="fDireccion">Dirección:</label><input id="fDireccion" class="form-control" maxlength="150" placeholder="Calle, número y ciudad"></div>
+            <div class="fila-campo"><label for="fTelefono">Teléfono:</label><input id="fTelefono" class="form-control" maxlength="10" inputmode="numeric" placeholder="Ej.: 0991234567"></div>
+            <div class="fila-campo"><label for="fEmail">Email:</label><input id="fEmail" type="email" class="form-control" maxlength="100" placeholder="nombre@monstersalud.ec"></div>
+        </div>
+    </div>
+
+    <div class="botonera">
+        <button class="btn btn-sigh" type="button" id="btnGuardar"><i class="bi bi-save mr-1"></i> Guardar</button>
+        <button class="btn btn-suave" type="button" id="btnActualizar"><i class="bi bi-pencil-square mr-1"></i> Actualizar</button>
+        <button class="btn btn-peligro-suave" type="button" id="btnBorrar"><i class="bi bi-trash mr-1"></i> Borrar</button>
+        <button class="btn btn-suave" type="button" id="btnCancelar"><i class="bi bi-x-lg mr-1"></i> Cancelar</button>
+        <button class="btn btn-suave" type="button" id="btnImprimir"><i class="bi bi-printer mr-1"></i> Imprimir</button>
+    </div>
+</div>
+
+<div class="panel" id="panelLista">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap:12px">
+        <div>
+            <h2 class="mb-0">Empleados registrados</h2>
+            <span class="text-suave" id="resumen" style="font-size:14px">Cargando...</span>
+        </div>
+        <div class="d-flex flex-wrap" style="gap:10px">
+            <select class="custom-select" id="filtroEstado" style="width:170px">
+                <option value="A">Activos</option>
+                <option value="I">Inactivos</option>
+                <option value="">Todos</option>
+            </select>
+            <div class="campo buscador" style="width:300px">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="filtroTexto" placeholder="Filtrar por código, cédula o nombre">
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table tabla-sigh">
+            <thead>
+            <tr>
+                <th>Código</th>
+                <th>Cédula</th>
+                <th>Apellidos y nombres</th>
+                <th>Cargo</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th class="text-center">Estado</th>
+            </tr>
+            </thead>
+            <tbody id="cuerpo">
+            <tr><td colspan="7" class="vacio">Cargando empleados...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/js/empleados.js" asp-append-version="true"></script>
+}

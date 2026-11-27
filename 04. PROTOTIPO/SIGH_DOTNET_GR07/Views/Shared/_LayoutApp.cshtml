@@ -1,0 +1,74 @@
+﻿@* Estructura de la aplicación: menú lateral según el perfil + barra superior con usuario y temporizador *@
+@inject MenuServicio MenuSrv
+@inject IOptions<SighOpciones> Opciones
+@{
+    UsuarioSesion usuario = UsuarioSesion.Desde(User)!;
+    List<MenuSistema> menu = await MenuSrv.MenuAsync(usuario.CodigoUsuario);
+    string activo = ViewData["Activo"] as string ?? "";
+    int segundos = Opciones.Value.MinutosSesion * 60;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <partial name="_Head" />
+</head>
+<body data-contexto="@Context.Request.PathBase">
+<div class="app">
+    <aside class="lateral">
+        <a class="marca text-white" href="~/inicio" style="text-decoration:none">
+            <img src="~/img/logo-sigh.svg" alt="">
+            <div>
+                <div class="marca-nombre">SIGH</div>
+                <div class="marca-sub">Monster Salud</div>
+            </div>
+        </a>
+        <a class="menu-enlace @(activo == "INICIO" ? "activo" : "")" href="~/inicio">
+            <i class="bi bi-house-door"></i> Inicio
+        </a>
+        @foreach (MenuSistema sistema in menu)
+        {
+            <div class="menu-grupo">@sistema.Descripcion</div>
+            foreach (OpcionMenu op in sistema.Opciones)
+            {
+                <a class="menu-enlace @(activo == op.Codigo ? "activo" : "")" href="@Url.Content("~" + op.Url)">
+                    <i class="bi @op.Icono"></i> @op.Descripcion
+                </a>
+            }
+        }
+        <div class="lateral-pie">
+            Sistema Integral de Gestión Hospitalaria<br>Hospital General Monster Salud · GR07
+        </div>
+    </aside>
+
+    <div class="contenido">
+        <header class="barra-superior">
+            <h1 class="titulo">@ViewData["Titulo"]</h1>
+            <div class="d-flex align-items-center flex-wrap" style="gap:14px">
+                <span class="temporizador" id="temporizador" data-segundos="@segundos"
+                      title="La sesión se cierra tras este tiempo de inactividad">
+                    <i class="bi bi-hourglass-split"></i> <span>15:00</span>
+                </span>
+                <div class="usuario-chip">
+                    <span class="avatar">@usuario.Iniciales</span>
+                    <div>
+                        <strong>@usuario.NombreCompleto</strong>
+                        <span>@usuario.CodigoUsuario · @usuario.PerfilesTexto</span>
+                    </div>
+                </div>
+                <form method="post" action="~/logout" class="m-0">
+                    <button class="btn btn-suave btn-sm" type="submit">
+                        <i class="bi bi-box-arrow-right mr-1"></i> Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </header>
+        <main class="pagina">
+            @RenderBody()
+        </main>
+    </div>
+</div>
+<script src="~/lib/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="~/js/sigh.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

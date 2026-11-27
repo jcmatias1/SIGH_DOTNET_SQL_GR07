@@ -1,0 +1,10 @@
+﻿@* RF-SEG-003 / RF-AUD-004: un usuario sin permiso no abre la opción ni escribiendo la URL *@
+<div class="panel text-center py-5">
+    <div class="mb-3" style="font-size:54px;color:#b42318"><i class="bi bi-shield-x"></i></div>
+    <h2>No tiene permiso para esta opción</h2>
+    <p class="text-suave mx-auto" style="max-width:560px">
+        La opción <strong>@ViewData["OpcionDenegada"]</strong> no está asignada a su perfil.
+        El intento quedó registrado en la auditoría. Si necesita acceso, solicítelo al administrador del sistema.
+    </p>
+    <a class="btn btn-sigh mt-2" href="~/inicio"><i class="bi bi-house-door mr-1"></i> Volver al inicio</a>
+</div>

@@ -1,0 +1,85 @@
+﻿@* ECUD1 paso 3: menú principal con los módulos habilitados para el perfil del usuario *@
+@model UsuarioSesion
+@inject IOptions<SighOpciones> Opciones
+@{
+    List<MenuSistema> menu = ViewBag.Menu;
+    List<Sesion> sesiones = ViewBag.Sesiones;
+}
+
+<section class="encabezado-pagina">
+    <div>
+        <div class="antetitulo">Panel principal</div>
+        <h1>Hola, @Model.NombreCompleto</h1>
+        <p>Estos son los módulos que su perfil <strong>@Model.PerfilesTexto</strong> tiene habilitados.</p>
+    </div>
+</section>
+
+<div class="row">
+    <div class="col-xl-8 mb-4">
+        <div class="panel">
+            @if (menu.Count == 0)
+            {
+                <p class="vacio mb-0">Su perfil todavía no tiene opciones asignadas.</p>
+            }
+            @foreach (MenuSistema sistema in menu)
+            {
+                <div class="sistema-titulo"><i class="bi @sistema.Icono"></i> @sistema.Descripcion</div>
+                <div class="modulos">
+                    @foreach (OpcionMenu op in sistema.Opciones)
+                    {
+                        <a class="modulo" href="@Url.Content("~" + op.Url)">
+                            <span class="icono"><i class="bi @op.Icono"></i></span>
+                            <strong>@op.Descripcion</strong>
+                            <span>Opción @op.Codigo · @op.Url</span>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-4 mb-4">
+        <div class="panel mb-4">
+            <h2>Sesión actual</h2>
+            <p class="bajada">Datos registrados en XESES_SESIO.</p>
+            <div class="dato"><span>Usuario</span><strong>@Model.CodigoUsuario</strong></div>
+            <div class="dato"><span>Sesión N.º</span><strong>@Model.CodigoSesion</strong></div>
+            <div class="dato"><span>Inicio</span><strong>@Model.InicioSesionTexto</strong></div>
+            <div class="dato"><span>Dirección IP</span><strong>@Model.DireccionIp</strong></div>
+            <div class="dato"><span>Acceso anterior</span><strong>@Model.UltimoAccesoTexto</strong></div>
+            <div class="dato"><span>Expira por inactividad</span><strong>@Opciones.Value.MinutosSesion minutos</strong></div>
+        </div>
+
+        <div class="panel">
+            <h2>Últimas sesiones</h2>
+            <p class="bajada">Historial de acceso de su cuenta.</p>
+            @foreach (Sesion s in sesiones)
+            {
+                <div class="dato">
+                    <span>
+                        @s.FechaInicio.ToString("dd/MM/yyyy HH:mm")<br>
+                        <small>IP @(s.DireccionIp ?? "—") · fin: @(s.FechaFin?.ToString("dd/MM/yyyy HH:mm") ?? "En curso")</small>
+                    </span>
+                    <strong>
+                        @if (s.CodigoSesion == Model.CodigoSesion)
+                        {
+                            <span class="etiqueta etiqueta-azul">Actual</span>
+                        }
+                        else if (s.EstadoSesion == "A")
+                        {
+                            <span class="etiqueta etiqueta-verde">Abierta</span>
+                        }
+                        else if (s.EstadoSesion == "E")
+                        {
+                            <span class="etiqueta etiqueta-ambar">Expirada</span>
+                        }
+                        else
+                        {
+                            <span class="etiqueta etiqueta-gris">Cerrada</span>
+                        }
+                    </strong>
+                </div>
+            }
+        </div>
+    </div>
+</div>
