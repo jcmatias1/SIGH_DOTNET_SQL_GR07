@@ -1,0 +1,95 @@
+﻿@* ECUD1 - RECUPERAR CONTRASEÑA: el usuario abre el enlace y escribe la nueva contraseña dos veces *@
+@{
+    Layout = "_LayoutAcceso";
+    ViewData["Titulo"] = "Restablecer contraseña";
+    ViewData["MarcaTitulo"] = "Defina una nueva contraseña";
+    ViewData["MarcaTexto"] = "La contraseña se guarda cifrada con SHA-256. Al cambiarla, la cuenta queda desbloqueada y el enlace deja de funcionar.";
+    bool tokenValido = ViewData["TokenValido"] is true;
+}
+
+@if (tokenValido)
+{
+    <h1>Nueva contraseña</h1>
+    <p class="bajada">Escríbala dos veces para confirmarla.</p>
+    if (ViewData["Error"] is string error)
+    {
+        <div class="aviso aviso-error" role="alert"><i class="bi bi-exclamation-octagon"></i><span>@error</span></div>
+    }
+    <form method="post" action="~/restablecer-password" id="formRestablecer" novalidate>
+        <input type="hidden" name="token" value="@ViewData["Token"]">
+        <div class="form-group">
+            <label for="password">Nueva contraseña</label>
+            <div class="campo">
+                <i class="bi bi-key"></i>
+                <input class="form-control" id="password" name="password" type="password" maxlength="64" autocomplete="new-password" required autofocus>
+            </div>
+            <ul class="politica" id="politica">
+                <li data-regla="largo"><i class="bi bi-circle"></i> Al menos 8 caracteres</li>
+                <li data-regla="letra"><i class="bi bi-circle"></i> Al menos una letra</li>
+                <li data-regla="numero"><i class="bi bi-circle"></i> Al menos un número</li>
+            </ul>
+        </div>
+        <div class="form-group">
+            <label for="confirmacion">Confirmar contraseña</label>
+            <div class="campo">
+                <i class="bi bi-key-fill"></i>
+                <input class="form-control" id="confirmacion" name="confirmacion" type="password" maxlength="64" autocomplete="new-password" required>
+            </div>
+        </div>
+        <button class="btn btn-sigh btn-ingresar" type="submit">
+            <i class="bi bi-check2-circle mr-1"></i> Guardar contraseña
+        </button>
+    </form>
+}
+else
+{
+    <h1>Enlace no válido</h1>
+    <div class="aviso aviso-alerta" role="alert">
+        <i class="bi bi-clock-history"></i>
+        <span>El enlace de restablecimiento venció, ya fue usado o no existe. Solicite uno nuevo.</span>
+    </div>
+    <a class="btn btn-sigh btn-ingresar" href="~/recuperar-password">
+        <i class="bi bi-arrow-repeat mr-1"></i> Solicitar un nuevo enlace
+    </a>
+}
+<div class="text-center mt-3">
+    <a class="enlace-recuperar" href="~/login"><i class="bi bi-arrow-left"></i> Volver a iniciar sesión</a>
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const clave = document.getElementById("password");
+        if (!clave) { return; }
+        const reglas = {
+            largo: function (v) { return v.length >= 8; },
+            letra: function (v) { return /[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(v); },
+            numero: function (v) { return /\d/.test(v); }
+        };
+        function revisar() {
+            let cumple = true;
+            document.querySelectorAll("#politica li").forEach(function (li) {
+                const ok = reglas[li.getAttribute("data-regla")](clave.value);
+                li.classList.toggle("ok", ok);
+                li.querySelector("i").className = ok ? "bi bi-check-circle-fill" : "bi bi-circle";
+                cumple = cumple && ok;
+            });
+            return cumple;
+        }
+        clave.addEventListener("input", revisar);
+        document.getElementById("formRestablecer").addEventListener("submit", function (evento) {
+            const confirmacion = document.getElementById("confirmacion").value;
+            let mensaje = null;
+            if (!revisar()) {
+                mensaje = "La contraseña no cumple la política del hospital.";
+            } else if (clave.value !== confirmacion) {
+                mensaje = "Las contraseñas no coinciden.";
+            }
+            if (mensaje) {
+                evento.preventDefault();
+                Swal.fire({ icon: "warning", title: "Revise la contraseña", text: mensaje, confirmButtonColor: "#0b5cad" });
+            }
+        });
+    })();
+</script>
+}

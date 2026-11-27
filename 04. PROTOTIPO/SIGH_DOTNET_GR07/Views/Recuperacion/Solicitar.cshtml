@@ -1,0 +1,58 @@
+﻿@* ECUD1 - RECUPERAR CONTRASEÑA: el usuario escribe su usuario o su correo institucional *@
+@inject IOptions<SighOpciones> Opciones
+@{
+    Layout = "_LayoutAcceso";
+    ViewData["Titulo"] = "Recuperar contraseña";
+    ViewData["MarcaTitulo"] = "Recupere el acceso a su cuenta";
+    ViewData["MarcaTexto"] = "Le enviaremos un enlace temporal a su correo institucional. El enlace vence en "
+        + Opciones.Value.MinutosVigenciaEnlace + " minutos y solo puede usarse una vez. El SIGH nunca muestra ni envía su contraseña actual.";
+}
+
+<h1>¿Olvidó su contraseña?</h1>
+<p class="bajada">Ingrese su usuario o su correo institucional.</p>
+
+@if (ViewData["Error"] is string error)
+{
+    <div class="aviso aviso-error" role="alert"><i class="bi bi-exclamation-octagon"></i><span>@error</span></div>
+}
+@if (ViewData["Mensaje"] is string mensaje)
+{
+    <div class="aviso aviso-info" role="status"><i class="bi bi-envelope-check"></i><span>@mensaje</span></div>
+}
+@if (ViewData["EnlaceDemo"] is string enlace)
+{
+    <div class="aviso aviso-demo">
+        <i class="bi bi-info-circle"></i>
+        <span><strong>Modo taller:</strong> el correo no está configurado, así que el enlace también se muestra aquí
+            y en la ventana de salida de Visual Studio:<br>
+            <a href="@enlace">@enlace</a></span>
+    </div>
+}
+
+<form method="post" action="~/recuperar-password" id="formRecuperar" novalidate>
+    <div class="form-group">
+        <label for="identificador">Usuario o correo institucional</label>
+        <div class="campo">
+            <i class="bi bi-envelope-at"></i>
+            <input class="form-control" id="identificador" name="identificador" maxlength="100"
+                   value="@ViewData["Identificador"]" placeholder="Ej.: mtorres o mtorres@monstersalud.ec" required autofocus>
+        </div>
+    </div>
+    <button class="btn btn-sigh btn-ingresar" type="submit">
+        <i class="bi bi-send mr-1"></i> Enviar enlace
+    </button>
+</form>
+<div class="text-center mt-3">
+    <a class="enlace-recuperar" href="~/login"><i class="bi bi-arrow-left"></i> Volver a iniciar sesión</a>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById("formRecuperar").addEventListener("submit", function (evento) {
+        if (!document.getElementById("identificador").value.trim()) {
+            evento.preventDefault();
+            Swal.fire({ icon: "warning", title: "Dato requerido", text: "Ingrese su usuario o su correo institucional.", confirmButtonColor: "#0b5cad" });
+        }
+    });
+</script>
+}

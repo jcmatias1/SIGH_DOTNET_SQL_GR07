@@ -1,0 +1,36 @@
+﻿@* Pantallas sin sesión (login y recuperación): panel institucional a la izquierda y formulario a la derecha *@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <partial name="_Head" />
+</head>
+<body data-contexto="@Context.Request.PathBase">
+<div class="acceso">
+    <section class="acceso-marca">
+        <div class="marca">
+            <img src="~/img/logo-sigh.svg" alt="Logotipo SIGH">
+            <div>
+                <div class="marca-nombre">SIGH</div>
+                <div class="marca-sub">Hospital General Monster Salud</div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="acceso-titulo">@ViewData["MarcaTitulo"]</h2>
+            <p class="acceso-texto">@ViewData["MarcaTexto"]</p>
+            @await RenderSectionAsync("Puntos", required: false)
+        </div>
+
+        <div class="acceso-pie">Talleres Login y CRUD MVC con ASP.NET Core · Grupo GR07</div>
+    </section>
+
+    <section class="acceso-form">
+        <div class="tarjeta-acceso">
+            @RenderBody()
+        </div>
+    </section>
+</div>
+<script src="~/lib/sweetalert2/sweetalert2.all.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
